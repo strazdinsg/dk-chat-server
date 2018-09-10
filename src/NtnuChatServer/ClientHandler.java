@@ -3,7 +3,7 @@ package NtnuChatServer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,16 +35,21 @@ public class ClientHandler extends Thread {
             while ((line = input.readLine()) != null){
                 System.out.println("Thread ID: " + this.getId());
                 System.out.println("  Message: " + line);
+                
+                send(line);
             }
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
+    /**
+     * Send message to client.
+     */
     public void send(String msg) {
         try {
-            OutputStreamWriter out = new OutputStreamWriter(clientSocket.getOutputStream());
-            out.write(msg, 0, msg.length());
+            PrintWriter pw = new PrintWriter(clientSocket.getOutputStream(), true);
+            pw.println(msg);
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
