@@ -36,7 +36,7 @@ public class Server {
                 System.out.println("New connection accepted.");
             
                 // Handle new connection
-                ClientHandler clientHandler = new ClientHandler(incomingSocket);
+                ClientHandler clientHandler = new ClientHandler(this, incomingSocket);
                 
                 // Start thread
                 clientHandler.start();
@@ -49,5 +49,9 @@ public class Server {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    public HashMap<Integer, ClientHandler> getConnectedClients(){
+        return connectedClients;
     }
 }

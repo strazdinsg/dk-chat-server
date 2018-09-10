@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,11 +17,14 @@ import java.util.logging.Logger;
 public class ClientHandler extends Thread {
     private Socket clientSocket;
     private String clientId;
+    private Server server;
     
     /**
+     * @param server the chat server.
      * @param clientSocket the client socket.
      */
-    public ClientHandler(Socket clientSocket){
+    public ClientHandler(Server server, Socket clientSocket){
+        this.server = server;
         this.clientSocket = clientSocket;
         this.clientId = "Anonymous" + GlobalCounter.getNumber();
     }
@@ -38,8 +43,12 @@ public class ClientHandler extends Thread {
                 System.out.println("Thread ID: " + this.getId());
                 System.out.println("  Message: " + line);
                 
-                // Echo msg back to client 
-                send("msg " + clientId + " " + line + "\n");
+                // Check if client is trying to send a message.
+                if (line.startsWith("msg ")) {
+                    // Broadcast message.
+                    String message = line.substring(4);
+                    broadcast("msg " + clientId + " " + message + "\n");
+                }
             }
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -48,6 +57,7 @@ public class ClientHandler extends Thread {
     
     /**
      * Send message to client.
+     * @param msg the message to send to the client.
      */
     public void send(String msg) {
         try {
@@ -55,6 +65,21 @@ public class ClientHandler extends Thread {
             pw.println(msg);
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Send message to all clients.
+     * @param msg the message to send to all clients.
+     */
+    public void broadcast(String msg) {
+        Map<Integer, ClientHandler> map = server.getConnectedClients();
+        for (Map.Entry<Integer, ClientHandler> client : map.entrySet()) {
+            // Don't send message to this client
+            if (client.getKey() != this.getId())
+            {
+                client.getValue().send(msg);
+            }
         }
     }
 }
