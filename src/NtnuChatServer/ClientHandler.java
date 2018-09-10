@@ -57,6 +57,10 @@ public class ClientHandler extends Thread {
             String message = msg.substring(4);
             broadcast(String.format(ServerResponse.MSG, clientId, message));
         }
+        if (msg.trim().equals("help")) { // Supported commands
+            // Send list of supported commands.
+            send(ServerResponse.MSG_SUPPORTED);
+        }
         else {
             // Command not supported
             send(ServerResponse.MSG_ERR);
