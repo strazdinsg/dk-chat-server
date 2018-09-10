@@ -50,7 +50,11 @@ public class Server {
             }
         }
     }
-    
+            
+    /**
+     * Get all connected users.
+     * @return connectedClients
+     */
     public HashMap<Integer, ClientHandler> getConnectedClients(){
         return connectedClients;
     }

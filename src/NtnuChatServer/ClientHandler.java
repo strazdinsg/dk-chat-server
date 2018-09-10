@@ -57,14 +57,63 @@ public class ClientHandler extends Thread {
             String message = msg.substring(4);
             broadcast(String.format(ServerResponse.MSG, clientId, message));
         }
+        else
         if (msg.trim().equals("help")) { // Supported commands
             // Send list of supported commands.
             send(ServerResponse.MSG_SUPPORTED);
+        }
+        else
+        if (msg.startsWith("login ")) { // Login 
+            String username = msg.substring(6);
+            login(username);
         }
         else {
             // Command not supported
             send(ServerResponse.MSG_ERR);
         }
+    }
+    
+    /**
+     * Authenticate a new username.
+     * @param username username to authenticate.
+     */
+    private void login(String username) {
+        boolean isUsernameAvailable = true;
+        
+        Map<Integer, ClientHandler> map = server.getConnectedClients();
+        for (Map.Entry<Integer, ClientHandler> client : map.entrySet()) {
+            if (client.getValue().getUsername().equals(username)) {
+                // Username is taken.
+                isUsernameAvailable = false;
+            }
+        }
+        
+        // Check if username is only made out of letters and numbers.
+        if (username.matches("[a-zA-Z0-9]*")){
+            if (isUsernameAvailable) {
+                // Change username.
+                clientId = username;
+            
+                // Send loginok to client.
+                send(ServerResponse.MSG_LOGIN_OK);
+            }
+            else {
+                // Send loginerr to client.
+                send(String.format(ServerResponse.MSG_LOGIN_ERR, "username already in use"));
+            }
+        }
+        else {
+            send(String.format(ServerResponse.MSG_LOGIN_ERR, "incorrect username format"));
+        }
+    }
+    
+    /**
+     * Get the client username.
+     * @return clientId
+     */
+    public String getUsername()
+    {
+        return clientId;
     }
     
     /**
