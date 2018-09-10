@@ -32,25 +32,11 @@ public class Server {
                 System.out.println("New connection accepted.");
             
                 // Handle new connection
-                handleIncomingConnection(incomingSocket);
+                ClientHandler clientHandler = new ClientHandler();
             
             } catch (IOException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-    }
-    
-    /**
-     * Handle new client connections
-     * @param socket the incoming socket connection
-     */
-    private void handleIncomingConnection(Socket socket)
-    {
-        try {
-            // 10 second delay
-            Thread.sleep(1000 * 10);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
