@@ -26,10 +26,17 @@ public class ClientHandler extends Thread {
      */
     public void run(){
         try {
-            // 10 second delay to simulate 
-            Thread.sleep(1000 * 10);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                
+            String line;
+            
+            // Read from socket until it closes.
+            while ((line = input.readLine()) != null){
+                System.out.println("Thread ID: " + this.getId());
+                System.out.println("  Message: " + line);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
