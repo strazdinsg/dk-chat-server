@@ -40,18 +40,26 @@ public class ClientHandler extends Thread {
             
             // Read from socket until it closes.
             while ((line = input.readLine()) != null){
-                System.out.println("Thread ID: " + this.getId());
-                System.out.println("  Message: " + line);
-                
-                // Check if client is trying to send a message.
-                if (line.startsWith("msg ")) {
-                    // Broadcast message.
-                    String message = line.substring(4);
-                    broadcast("msg " + clientId + " " + message + "\n");
-                }
+                handleIncomingMessage(line);
             }
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Parse incoming message.
+     * @param msg incoming message
+     */
+    private void handleIncomingMessage(String msg) {
+        if (msg.startsWith("msg ")) { // Public chat message
+            // Broadcast message.
+            String message = msg.substring(4);
+            broadcast(String.format(ServerResponse.MSG, clientId, message));
+        }
+        else {
+            // Command not supported
+            send(ServerResponse.MSG_ERR);
         }
     }
     
@@ -76,8 +84,7 @@ public class ClientHandler extends Thread {
         Map<Integer, ClientHandler> map = server.getConnectedClients();
         for (Map.Entry<Integer, ClientHandler> client : map.entrySet()) {
             // Don't send message to this client
-            if (client.getKey() != this.getId())
-            {
+            if (client.getKey() != this.getId()) {
                 client.getValue().send(msg);
             }
         }
