@@ -20,16 +20,36 @@ public class Server {
         try {
             // Start listening on port
             serverSocket = new ServerSocket(port);
-            
-            // Wait for an incoming connection.
-            Socket incomingSocket = serverSocket.accept();
-            
-            System.out.println("New connection accepted.");
-            
-            // Close the socket.
-            serverSocket.close();
-            
         } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        while(true){
+            try {            
+                // Wait for an incoming connection.
+                Socket incomingSocket = serverSocket.accept();
+            
+                System.out.println("New connection accepted.");
+            
+                // Handle new connection
+                handleIncomingConnection(incomingSocket);
+            
+            } catch (IOException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    /**
+     * Handle new client connections
+     * @param socket the incoming socket connection
+     */
+    private void handleIncomingConnection(Socket socket)
+    {
+        try {
+            // 10 second delay
+            Thread.sleep(1000 * 10);
+        } catch (InterruptedException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
