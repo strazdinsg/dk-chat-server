@@ -67,6 +67,10 @@ public class ClientHandler extends Thread {
             String username = msg.substring(6);
             login(username);
         }
+        else
+        if (msg.trim().equals("users")) { // Get online user listing 
+            users();
+        }
         else {
             // Command not supported
             send(ServerResponse.MSG_ERR);
@@ -105,6 +109,23 @@ public class ClientHandler extends Thread {
         else {
             send(String.format(ServerResponse.MSG_LOGIN_ERR, "incorrect username format"));
         }
+    }
+    
+    /**
+     * Send user list to client.
+     */
+    private void users()
+    {
+        String returnUsers = "";
+        
+        Map<Integer, ClientHandler> map = server.getConnectedClients();
+        for (Map.Entry<Integer, ClientHandler> client : map.entrySet()) {
+            // Add username to list.
+            returnUsers += client.getValue().getUsername() + " ";
+        }
+        
+        // Send user list to client.
+        send(String.format(ServerResponse.MSG_USERS, returnUsers.trim()));
     }
     
     /**
