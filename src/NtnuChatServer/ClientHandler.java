@@ -38,7 +38,8 @@ public class ClientHandler extends Thread {
                 System.out.println("Thread ID: " + this.getId());
                 System.out.println("  Message: " + line);
                 
-                send(line);
+                // Echo msg back to client 
+                send("msg " + clientId + " " + line + "\n");
             }
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
