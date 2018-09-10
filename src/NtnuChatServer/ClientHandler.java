@@ -14,12 +14,14 @@ import java.util.logging.Logger;
  */
 public class ClientHandler extends Thread {
     private Socket clientSocket;
+    private String clientId;
     
     /**
      * @param clientSocket the client socket.
      */
     public ClientHandler(Socket clientSocket){
         this.clientSocket = clientSocket;
+        this.clientId = "Anonymous" + GlobalCounter.getNumber();
     }
     
     /**
