@@ -32,7 +32,10 @@ public class Server {
                 System.out.println("New connection accepted.");
             
                 // Handle new connection
-                ClientHandler clientHandler = new ClientHandler();
+                ClientHandler clientHandler = new ClientHandler(incomingSocket);
+                
+                // Start thread
+                clientHandler.start();
             
             } catch (IOException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
