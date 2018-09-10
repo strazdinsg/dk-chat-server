@@ -18,6 +18,7 @@ public class ClientHandler extends Thread {
     private Socket clientSocket;
     private String clientId;
     private Server server;
+    private boolean authenticated;
     
     /**
      * @param server the chat server.
@@ -27,6 +28,7 @@ public class ClientHandler extends Thread {
         this.server = server;
         this.clientSocket = clientSocket;
         this.clientId = "Anonymous" + GlobalCounter.getNumber();
+        this.authenticated = false;
     }
     
     /**
@@ -71,9 +73,53 @@ public class ClientHandler extends Thread {
         if (msg.trim().equals("users")) { // Get online user listing 
             users();
         }
+        else
+        if (msg.startsWith("privmsg ")) { // Send private message 
+            if (msg.trim().split(" ").length >= 3) {
+                String recipient = msg.split(" ")[1].trim();
+                String message = msg.substring(8 + recipient.length() + 1).trim(); // The length is privmsg + recipient + space
+                
+                if (recipient.length() > 0 && message.length() > 0){
+                    sendPrivateMessage(recipient, message);
+                }
+            }
+        }
         else {
             // Command not supported
             send(ServerResponse.MSG_ERR);
+        }
+    }
+    
+    /**
+     * Send a private message.
+     * @param recipient username to send message to.
+     * @param message message to send.
+     */
+    private void sendPrivateMessage(String recipient, String message) {
+        if (authenticated)
+        {
+            ClientHandler recipientFound = null;
+            
+            Map<Integer, ClientHandler> map = server.getConnectedClients();
+            for (Map.Entry<Integer, ClientHandler> client : map.entrySet()) {
+                if (client.getValue().getUsername().equals(recipient)) {
+                    // Found username in connectedClients list.
+                    recipientFound = client.getValue();
+                }
+            }
+            
+            if (recipientFound != null) {
+                // Send message to recipient
+                recipientFound.send(String.format(ServerResponse.MSG_PRIVMSG, clientId, message));
+            }
+            else {
+                // Could not find recipient - send error message to client.
+                send(ServerResponse.MSG_ERR_PRIVMSG_RECIPIENT);
+            }
+        }
+        else {
+            // Client not authorized.
+            send(ServerResponse.MSG_ERR_PRIVMSG_UNAUTHORIZED);
         }
     }
     
@@ -97,7 +143,8 @@ public class ClientHandler extends Thread {
             if (isUsernameAvailable) {
                 // Change username.
                 clientId = username;
-            
+                authenticated = true;
+                
                 // Send loginok to client.
                 send(ServerResponse.MSG_LOGIN_OK);
             }
