@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,9 +14,9 @@ import java.util.logging.Logger;
  * Used as part of assignment A4 in DataKomm course.
  */
 public class ClientHandler extends Thread {
-    private Socket clientSocket;
+    private final Socket clientSocket;
     private String clientId;
-    private Server server;
+    private final Server server;
     private boolean authenticated;
     
     /**
@@ -32,8 +31,10 @@ public class ClientHandler extends Thread {
     }
     
     /**
-     * Handle client connection.
+     * Handle client connection. This method is entry point when a new thread 
+     * is started
      */
+    @Override
     public void run(){
         try {
             BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));

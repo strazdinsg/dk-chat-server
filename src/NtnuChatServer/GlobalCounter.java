@@ -8,6 +8,7 @@ public class GlobalCounter {
     
     /**
      * Return count and add +1 to count
+     * @return 
      */
     public static int getNumber(){
         int returnValue = count;

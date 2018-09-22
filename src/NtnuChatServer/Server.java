@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,14 +14,17 @@ import java.util.logging.Logger;
  */
 public class Server {
     private ServerSocket serverSocket;
-    private HashMap<Integer, ClientHandler> connectedClients;
+    private final Map<Integer, ClientHandler> connectedClients;
+    
+    public Server(){
+        connectedClients = new HashMap<>();
+    }
     
     /**
-     * @param port the server port
+     * Start TCP server
+     * @param port the TCP server port
      */
-    public Server(int port){
-        connectedClients = new HashMap<Integer, ClientHandler>();
-        
+    public void start(int port) {        
         try {
             // Start listening on port
             serverSocket = new ServerSocket(port);
@@ -52,10 +56,10 @@ public class Server {
     }
             
     /**
-     * Get all connected users.
+     * Get all connected users. Maps client thread ID to ClientHandler object
      * @return connectedClients
      */
-    public HashMap<Integer, ClientHandler> getConnectedClients(){
+    public Map<Integer, ClientHandler> getConnectedClients(){
         return connectedClients;
     }
 }

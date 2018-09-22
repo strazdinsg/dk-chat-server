@@ -1,7 +1,7 @@
 package NtnuChatServer;
 
 /**
- * The servers request responses.
+ * The servers response messages.
  */
 public class ServerResponse {
     public static String MSG_ERR_PRIVMSG_UNAUTHORIZED = "msgerr unauthorized\n";
