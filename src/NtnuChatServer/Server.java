@@ -62,4 +62,11 @@ public class Server {
     public Map<Integer, ClientHandler> getConnectedClients(){
         return connectedClients;
     }
+    
+    /**
+     * Remove ClientHandler from connectedClients.
+     */
+    public void removeConnectedClient(int client){
+        connectedClients.remove(client);
+    }
 }

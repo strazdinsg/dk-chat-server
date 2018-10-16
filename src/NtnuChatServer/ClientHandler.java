@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.net.SocketException;
 
 /**
  * Handle connected chat client.
@@ -41,13 +42,22 @@ public class ClientHandler extends Thread {
                 
             String line;
             
-            // Read from socket until it closes.
-            while ((line = input.readLine()) != null){
-                handleIncomingMessage(line);
+            try {
+                // Read from socket until it closes.
+                while ((line = input.readLine()) != null){
+                    handleIncomingMessage(line);
+                }
+            }
+            catch (SocketException ex)
+            {
+                Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        // Socket has been closed. Remove user from connectedClients.
+        server.removeConnectedClient((int)Thread.currentThread().getId());
     }
     
     /**
