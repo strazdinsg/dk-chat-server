@@ -32,6 +32,8 @@ public class Server {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        System.out.println("Chat server started on port " + port);
+        
         while(true){
             try {            
                 // Wait for an incoming connection.
