@@ -47,6 +47,8 @@ public class ClientHandler extends Thread {
                 while ((line = input.readLine()) != null){
                     handleIncomingMessage(line);
                 }
+                // Socket closed on the client side, force closing the server side as well
+                clientSocket.close();
             }
             catch (SocketException ex)
             {
