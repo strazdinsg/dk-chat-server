@@ -152,6 +152,7 @@ public class ClientHandler extends Thread {
             if (recipientFound != null) {
                 // Send message to recipient
                 recipientFound.enqueueMessage(String.format(ServerResponse.MSG_PRIVMSG, clientId, message));
+                send(String.format(ServerResponse.MSG_MSG_OK, 1)); // Message sent to 1 recipient
             } else {
                 // Could not find recipient - send error message to client.
                 send(ServerResponse.MSG_ERR_PRIVMSG_RECIPIENT);
