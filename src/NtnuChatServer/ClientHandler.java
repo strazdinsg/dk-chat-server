@@ -242,8 +242,10 @@ public class ClientHandler extends Thread {
     }
 
     private void addMessageToInbox(String message) {
+        System.out.println(String.format("Add message to inbox #%s: %s", getId(), message));
         if (inbox.size() >= INBOX_SIZE) {
             // Inbox full, remove the oldest message
+            System.out.println("Inbox full, removing oldest message");
             inbox.poll();
         }
         inbox.add(message);
