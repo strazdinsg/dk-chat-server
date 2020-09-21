@@ -4,7 +4,7 @@ package NtnuChatServer;
  * Global count integer.
  */
 public class GlobalCounter {
-    private static int count = 0;
+    private static int count = 1;
 
     /**
      * Return count and add +1 to count
