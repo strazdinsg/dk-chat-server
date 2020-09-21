@@ -38,8 +38,7 @@ public class Server {
                 // Wait for an incoming connection.
                 Socket incomingSocket = serverSocket.accept();
             
-                System.out.println("New connection accepted.");
-            
+
                 // Handle new connection
                 ClientHandler clientHandler = new ClientHandler(this, incomingSocket);
                 
@@ -48,6 +47,7 @@ public class Server {
                 
                 // Add thread to connectedClients hashtable
                 int clientHandlerThreadId = (int)clientHandler.getId();
+                System.out.println("New connection accepted, client ID = " + clientHandlerThreadId);
                 connectedClients.put(clientHandlerThreadId, clientHandler);
             
             } catch (IOException ex) {
@@ -87,6 +87,7 @@ public class Server {
      * Remove ClientHandler from connectedClients.
      */
     public void removeConnectedClient(int client){
+        System.out.println("Removing client " + client);
         connectedClients.remove(client);
     }
 

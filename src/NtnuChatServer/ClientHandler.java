@@ -19,16 +19,18 @@ public class ClientHandler extends Thread {
     private String clientId;
     private final Server server;
     private boolean authenticated;
+    private final PrintWriter pw;
     
     /**
      * @param server the chat server.
      * @param clientSocket the client socket.
      */
-    public ClientHandler(Server server, Socket clientSocket){
+    public ClientHandler(Server server, Socket clientSocket) throws IOException {
         this.server = server;
         this.clientSocket = clientSocket;
         this.clientId = "Anonymous" + GlobalCounter.getNumber();
         this.authenticated = false;
+        pw = new PrintWriter(clientSocket.getOutputStream(), true);
     }
     
     /**
@@ -104,8 +106,10 @@ public class ClientHandler extends Thread {
         }
     }
 
+    /**
+     * Send user list to client.
+     */
     private void users() {
-        // Send user list to client.
         send(String.format(ServerResponse.MSG_USERS, server.getUsernames()));
     }
 
@@ -180,12 +184,7 @@ public class ClientHandler extends Thread {
      * @param msg the message to send to the client.
      */
     public void send(String msg) {
-        try {
-            PrintWriter pw = new PrintWriter(clientSocket.getOutputStream(), true);
-            pw.println(msg);
-        } catch (IOException ex) {
-            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        pw.println(msg);
     }
     
     /**
