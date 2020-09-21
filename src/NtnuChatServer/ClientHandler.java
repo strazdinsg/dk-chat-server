@@ -103,7 +103,12 @@ public class ClientHandler extends Thread {
             send(ServerResponse.MSG_ERR);
         }
     }
-    
+
+    private void users() {
+        // Send user list to client.
+        send(String.format(ServerResponse.MSG_USERS, server.getUsernames()));
+    }
+
     /**
      * Send a private message.
      * @param recipient username to send message to.
@@ -112,16 +117,7 @@ public class ClientHandler extends Thread {
     private void sendPrivateMessage(String recipient, String message) {
         if (authenticated)
         {
-            ClientHandler recipientFound = null;
-            
-            Map<Integer, ClientHandler> map = server.getConnectedClients();
-            for (Map.Entry<Integer, ClientHandler> client : map.entrySet()) {
-                if (client.getValue().getUsername().equals(recipient)) {
-                    // Found username in connectedClients list.
-                    recipientFound = client.getValue();
-                }
-            }
-            
+            ClientHandler recipientFound = server.getClientByUsername(recipient);
             if (recipientFound != null) {
                 // Send message to recipient
                 recipientFound.send(String.format(ServerResponse.MSG_PRIVMSG, clientId, message));
@@ -143,15 +139,13 @@ public class ClientHandler extends Thread {
      */
     private void login(String username) {
         boolean isUsernameAvailable = true;
-        
-        Map<Integer, ClientHandler> map = server.getConnectedClients();
-        for (Map.Entry<Integer, ClientHandler> client : map.entrySet()) {
-            if (client.getValue().getUsername().equals(username)) {
-                // Username is taken.
-                isUsernameAvailable = false;
-            }
+
+        ClientHandler existingClient = server.getClientByUsername(username);
+        if (existingClient != null) {
+            // Someone has that username already
+            isUsernameAvailable = false;
         }
-        
+
         // Check if username is only made out of letters and numbers.
         if (username.matches("[a-zA-Z0-9]*")){
             if (isUsernameAvailable) {
@@ -170,23 +164,6 @@ public class ClientHandler extends Thread {
         else {
             send(String.format(ServerResponse.MSG_LOGIN_ERR, "incorrect username format"));
         }
-    }
-    
-    /**
-     * Send user list to client.
-     */
-    private void users()
-    {
-        String returnUsers = "";
-        
-        Map<Integer, ClientHandler> map = server.getConnectedClients();
-        for (ClientHandler client : map.values()) {
-            // Add username to list.
-            returnUsers += client.getUsername() + " ";
-        }
-        
-        // Send user list to client.
-        send(String.format(ServerResponse.MSG_USERS, returnUsers.trim()));
     }
     
     /**
@@ -216,8 +193,7 @@ public class ClientHandler extends Thread {
      * @param msg the message to send to all clients.
      */
     public void broadcast(String msg) {
-        Map<Integer, ClientHandler> map = server.getConnectedClients();
-        for (Map.Entry<Integer, ClientHandler> entry : map.entrySet()) {
+        for (Map.Entry<Integer, ClientHandler> entry : server.getConnectedClients().entrySet()) {
             // Don't send message to this client
             if (entry.getKey() != this.getId()) {
                 ClientHandler clientHandler = entry.getValue();

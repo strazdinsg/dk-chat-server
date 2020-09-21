@@ -3,8 +3,7 @@ package NtnuChatServer;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,19 +55,52 @@ public class Server {
             }
         }
     }
-            
+
+
     /**
-     * Get all connected users. Maps client thread ID to ClientHandler object
-     * @return connectedClients
+     * Get currently connected clients in a map format where the key is the client thread ID and the value
+     * is ClientHandler object for that client.
+     * @return The connected clients
      */
-    public Map<Integer, ClientHandler> getConnectedClients(){
+    public Map<Integer, ClientHandler> getConnectedClients() {
         return connectedClients;
     }
-    
+
+    /**
+     * Find a client handber by the username (login_
+     * @param username Username of the client of interest
+     * @return ClientHandler or null if none found
+     */
+    public ClientHandler getClientByUsername(String username) {
+        ClientHandler desiredClient = null;
+        Iterator<ClientHandler> it = connectedClients.values().iterator();
+        while (desiredClient == null && it.hasNext()) {
+            ClientHandler c = it.next();
+            if (c.getUsername().equals(username)) {
+                desiredClient = c;
+            }
+        }
+        return desiredClient;
+    }
+
     /**
      * Remove ClientHandler from connectedClients.
      */
     public void removeConnectedClient(int client){
         connectedClients.remove(client);
+    }
+
+    /**
+     * Return a list of connected users
+     * @return Usernames of connected clients, separated by space
+     */
+    public String getUsernames()
+    {
+        List<String> usernames = new LinkedList<>();
+        for (ClientHandler client : connectedClients.values()) {
+            usernames.add(client.getUsername());
+        }
+
+        return String.join(" ", usernames);
     }
 }
