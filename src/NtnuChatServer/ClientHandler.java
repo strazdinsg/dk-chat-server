@@ -95,6 +95,8 @@ public class ClientHandler extends Thread {
             setMode(Mode.ASYNC);
         } else if (msg.equals("inbox")) { // Get online user listing
             reportInbox();
+        } else if (msg.equals("joke")) { // Get online user listing
+            send(String.format(ServerResponse.MSG_JOKE, Jokes.getRandomJoke()));
         } else if (msg.startsWith("privmsg ")) { // Send private message
             String[] parts = msg.trim().split(" ");
             if (parts.length >= 3) {

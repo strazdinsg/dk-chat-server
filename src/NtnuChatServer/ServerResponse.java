@@ -14,5 +14,6 @@ public class ServerResponse {
     public static String MSG_USERS = "users %s";
     public static String MSG_PRIVMSG = "privmsg %s %s";
     public static String MSG_SUPPORTED = "supported login msg privmsg users help";
-    public static String MSG_INBOX = "inbox %i";
+    public static String MSG_INBOX = "inbox %s";
+    public static String MSG_JOKE = "joke %s";
 }
