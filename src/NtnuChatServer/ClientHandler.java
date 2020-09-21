@@ -79,7 +79,8 @@ public class ClientHandler extends Thread {
         if (msg.startsWith("msg ")) { // Public chat message
             // Broadcast message.
             String message = msg.substring(4);
-            broadcast(String.format(ServerResponse.MSG, clientId, message));
+            int recipientCount = broadcast(String.format(ServerResponse.MSG, clientId, message));
+            send(String.format(ServerResponse.MSG_MSG_OK, recipientCount));
         } else if (msg.equals("help")) { // Supported commands
             // Send list of supported commands.
             send(ServerResponse.MSG_SUPPORTED);
@@ -215,8 +216,9 @@ public class ClientHandler extends Thread {
      * Send message to all clients.
      *
      * @param msg the message to send to all clients.
+     * @return The number of messages sent (how many recipients got the message)
      */
-    public void broadcast(String msg) {
+    public int broadcast(String msg) {
         for (Map.Entry<Integer, ClientHandler> entry : server.getConnectedClients().entrySet()) {
             // Don't send message to this client
             if (entry.getKey() != this.getId()) {
@@ -224,6 +226,7 @@ public class ClientHandler extends Thread {
                 clientHandler.enqueueMessage(msg);
             }
         }
+        return server.getConnectedClients().size() - 1;
     }
 
     /**

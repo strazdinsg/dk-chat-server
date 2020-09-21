@@ -8,6 +8,7 @@ public class ServerResponse {
     public static String MSG_ERR_PRIVMSG_RECIPIENT = "msgerr incorrect recipient";
     public static String MSG_ERR = "cmderr command not supported";
     public static String MSG = "msg %s %s";
+    public static String MSG_MSG_OK = "msgok %s";
     public static String MSG_LOGIN_OK = "loginok";
     public static String MSG_LOGIN_ERR = "loginerr %s";
     public static String MSG_USERS = "users %s";
