@@ -117,6 +117,7 @@ public class ClientHandler extends Thread {
     private void setMode(Mode mode) {
         System.out.println(String.format("Setting mode to %s for client %s", mode.toString(), getId()));
         this.mode = mode;
+        send("modeok");
     }
 
     /**
