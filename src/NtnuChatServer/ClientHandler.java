@@ -87,9 +87,10 @@ public class ClientHandler extends Thread {
             users();
         }
         else
-        if (msg.startsWith("privmsg ")) { // Send private message 
-            if (msg.trim().split(" ").length >= 3) {
-                String recipient = msg.split(" ")[1].trim();
+        if (msg.startsWith("privmsg ")) { // Send private message
+            String[] parts = msg.trim().split(" ");
+            if (parts.length >= 3) {
+                String recipient = parts[1].trim();
                 String message = msg.substring(8 + recipient.length() + 1).trim(); // The length is privmsg + recipient + space
                 
                 if (recipient.length() > 0 && message.length() > 0){
@@ -179,9 +180,9 @@ public class ClientHandler extends Thread {
         String returnUsers = "";
         
         Map<Integer, ClientHandler> map = server.getConnectedClients();
-        for (Map.Entry<Integer, ClientHandler> client : map.entrySet()) {
+        for (ClientHandler client : map.values()) {
             // Add username to list.
-            returnUsers += client.getValue().getUsername() + " ";
+            returnUsers += client.getUsername() + " ";
         }
         
         // Send user list to client.
@@ -216,10 +217,11 @@ public class ClientHandler extends Thread {
      */
     public void broadcast(String msg) {
         Map<Integer, ClientHandler> map = server.getConnectedClients();
-        for (Map.Entry<Integer, ClientHandler> client : map.entrySet()) {
+        for (Map.Entry<Integer, ClientHandler> entry : map.entrySet()) {
             // Don't send message to this client
-            if (client.getKey() != this.getId()) {
-                client.getValue().send(msg);
+            if (entry.getKey() != this.getId()) {
+                ClientHandler clientHandler = entry.getValue();
+                clientHandler.send(msg);
             }
         }
     }
