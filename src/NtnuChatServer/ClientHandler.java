@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayDeque;
 import java.util.Map;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.SocketException;
@@ -20,6 +22,9 @@ public class ClientHandler extends Thread {
     private final Server server;
     private boolean authenticated;
     private final PrintWriter pw;
+    private Mode mode;
+    private final Queue<String> inbox;
+    private static final int INBOX_SIZE = 10; // How many messages to keep in the inbox
 
     /**
      * @param server       the chat server.
@@ -31,6 +36,8 @@ public class ClientHandler extends Thread {
         this.clientId = "Anonymous" + GlobalCounter.getNumber();
         this.authenticated = false;
         pw = new PrintWriter(clientSocket.getOutputStream(), true);
+        this.mode = Mode.ASYNC;
+        this.inbox = new ArrayDeque<>();
     }
 
     /**
@@ -68,18 +75,25 @@ public class ClientHandler extends Thread {
      * @param msg incoming message
      */
     private void handleIncomingMessage(String msg) {
+        msg = msg.trim(); // Remove trailing spaces
         if (msg.startsWith("msg ")) { // Public chat message
             // Broadcast message.
             String message = msg.substring(4);
             broadcast(String.format(ServerResponse.MSG, clientId, message));
-        } else if (msg.trim().equals("help")) { // Supported commands
+        } else if (msg.equals("help")) { // Supported commands
             // Send list of supported commands.
             send(ServerResponse.MSG_SUPPORTED);
         } else if (msg.startsWith("login ")) { // Login
             String username = msg.substring(6);
             login(username);
-        } else if (msg.trim().equals("users")) { // Get online user listing
+        } else if (msg.equals("users")) { // Get online user listing
             users();
+        } else if (msg.equals("sync")) { // Get online user listing
+            setMode(Mode.SYNC);
+        } else if (msg.equals("async")) { // Get online user listing
+            setMode(Mode.ASYNC);
+        } else if (msg.equals("inbox")) { // Get online user listing
+            reportInbox();
         } else if (msg.startsWith("privmsg ")) { // Send private message
             String[] parts = msg.trim().split(" ");
             if (parts.length >= 3) {
@@ -94,6 +108,27 @@ public class ClientHandler extends Thread {
             // Command not supported
             send(ServerResponse.MSG_ERR);
         }
+    }
+
+    /**
+     * Set the conversation mode
+     * @param mode
+     */
+    private void setMode(Mode mode) {
+        System.out.println(String.format("Setting mode to %s for client %s", mode.toString(), getId()));
+        this.mode = mode;
+    }
+
+    /**
+     * Send the content of inbox to the user
+     */
+    private void reportInbox() {
+        send(String.format(ServerResponse.MSG_INBOX, inbox.size())); // Inbox size
+        // Send the messages from the inbox
+        for (String message: inbox) {
+            send(message);
+        }
+        inbox.clear();
     }
 
     /**
@@ -114,7 +149,7 @@ public class ClientHandler extends Thread {
             ClientHandler recipientFound = server.getClientByUsername(recipient);
             if (recipientFound != null) {
                 // Send message to recipient
-                recipientFound.send(String.format(ServerResponse.MSG_PRIVMSG, clientId, message));
+                recipientFound.enqueueMessage(String.format(ServerResponse.MSG_PRIVMSG, clientId, message));
             } else {
                 // Could not find recipient - send error message to client.
                 send(ServerResponse.MSG_ERR_PRIVMSG_RECIPIENT);
@@ -185,8 +220,28 @@ public class ClientHandler extends Thread {
             // Don't send message to this client
             if (entry.getKey() != this.getId()) {
                 ClientHandler clientHandler = entry.getValue();
-                clientHandler.send(msg);
+                clientHandler.enqueueMessage(msg);
             }
         }
+    }
+
+    /**
+     * Enqueue the message in the clients inbox (if we are in synchronous mode) or send it to the client immediately
+     * @param message Message for the clients inbox
+     */
+    private void enqueueMessage(String message) {
+        if (mode == Mode.SYNC) {
+            addMessageToInbox(message);
+        } else {
+            send(message);
+        }
+    }
+
+    private void addMessageToInbox(String message) {
+        if (inbox.size() >= INBOX_SIZE) {
+            // Inbox full, remove the oldest message
+            inbox.poll();
+        }
+        inbox.add(message);
     }
 }
