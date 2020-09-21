@@ -20,9 +20,9 @@ public class ClientHandler extends Thread {
     private final Server server;
     private boolean authenticated;
     private final PrintWriter pw;
-    
+
     /**
-     * @param server the chat server.
+     * @param server       the chat server.
      * @param clientSocket the client socket.
      */
     public ClientHandler(Server server, Socket clientSocket) throws IOException {
@@ -32,40 +32,39 @@ public class ClientHandler extends Thread {
         this.authenticated = false;
         pw = new PrintWriter(clientSocket.getOutputStream(), true);
     }
-    
+
     /**
-     * Handle client connection. This method is entry point when a new thread 
+     * Handle client connection. This method is entry point when a new thread
      * is started
      */
     @Override
-    public void run(){
+    public void run() {
         try {
             BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                
+
             String line;
-            
+
             try {
                 // Read from socket until it closes.
-                while ((line = input.readLine()) != null){
+                while ((line = input.readLine()) != null) {
                     handleIncomingMessage(line);
                 }
                 // Socket closed on the client side, force closing the server side as well
                 clientSocket.close();
-            }
-            catch (SocketException ex)
-            {
+            } catch (SocketException ex) {
                 Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         // Socket has been closed. Remove user from connectedClients.
-        server.removeConnectedClient((int)Thread.currentThread().getId());
+        server.removeConnectedClient((int) Thread.currentThread().getId());
     }
-    
+
     /**
      * Parse incoming message.
+     *
      * @param msg incoming message
      */
     private void handleIncomingMessage(String msg) {
@@ -73,34 +72,25 @@ public class ClientHandler extends Thread {
             // Broadcast message.
             String message = msg.substring(4);
             broadcast(String.format(ServerResponse.MSG, clientId, message));
-        }
-        else
-        if (msg.trim().equals("help")) { // Supported commands
+        } else if (msg.trim().equals("help")) { // Supported commands
             // Send list of supported commands.
             send(ServerResponse.MSG_SUPPORTED);
-        }
-        else
-        if (msg.startsWith("login ")) { // Login 
+        } else if (msg.startsWith("login ")) { // Login
             String username = msg.substring(6);
             login(username);
-        }
-        else
-        if (msg.trim().equals("users")) { // Get online user listing 
+        } else if (msg.trim().equals("users")) { // Get online user listing
             users();
-        }
-        else
-        if (msg.startsWith("privmsg ")) { // Send private message
+        } else if (msg.startsWith("privmsg ")) { // Send private message
             String[] parts = msg.trim().split(" ");
             if (parts.length >= 3) {
                 String recipient = parts[1].trim();
                 String message = msg.substring(8 + recipient.length() + 1).trim(); // The length is privmsg + recipient + space
-                
-                if (recipient.length() > 0 && message.length() > 0){
+
+                if (recipient.length() > 0 && message.length() > 0) {
                     sendPrivateMessage(recipient, message);
                 }
             }
-        }
-        else {
+        } else {
             // Command not supported
             send(ServerResponse.MSG_ERR);
         }
@@ -115,30 +105,29 @@ public class ClientHandler extends Thread {
 
     /**
      * Send a private message.
+     *
      * @param recipient username to send message to.
-     * @param message message to send.
+     * @param message   message to send.
      */
     private void sendPrivateMessage(String recipient, String message) {
-        if (authenticated)
-        {
+        if (authenticated) {
             ClientHandler recipientFound = server.getClientByUsername(recipient);
             if (recipientFound != null) {
                 // Send message to recipient
                 recipientFound.send(String.format(ServerResponse.MSG_PRIVMSG, clientId, message));
-            }
-            else {
+            } else {
                 // Could not find recipient - send error message to client.
                 send(ServerResponse.MSG_ERR_PRIVMSG_RECIPIENT);
             }
-        }
-        else {
+        } else {
             // Client not authorized.
             send(ServerResponse.MSG_ERR_PRIVMSG_UNAUTHORIZED);
         }
     }
-    
+
     /**
      * Authenticate a new username.
+     *
      * @param username username to authenticate.
      */
     private void login(String username) {
@@ -151,44 +140,44 @@ public class ClientHandler extends Thread {
         }
 
         // Check if username is only made out of letters and numbers.
-        if (username.matches("[a-zA-Z0-9]*")){
+        if (username.matches("[a-zA-Z0-9]*")) {
             if (isUsernameAvailable) {
                 // Change username.
                 clientId = username;
                 authenticated = true;
-                
+
                 // Send loginok to client.
                 send(ServerResponse.MSG_LOGIN_OK);
-            }
-            else {
+            } else {
                 // Send loginerr to client.
                 send(String.format(ServerResponse.MSG_LOGIN_ERR, "username already in use"));
             }
-        }
-        else {
+        } else {
             send(String.format(ServerResponse.MSG_LOGIN_ERR, "incorrect username format"));
         }
     }
-    
+
     /**
      * Get the client username.
+     *
      * @return clientId
      */
-    public String getUsername()
-    {
+    public String getUsername() {
         return clientId;
     }
-    
+
     /**
      * Send message to client.
+     *
      * @param msg the message to send to the client.
      */
     public void send(String msg) {
         pw.println(msg);
     }
-    
+
     /**
      * Send message to all clients.
+     *
      * @param msg the message to send to all clients.
      */
     public void broadcast(String msg) {
