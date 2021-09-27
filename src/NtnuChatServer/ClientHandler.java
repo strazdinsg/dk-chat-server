@@ -8,8 +8,6 @@ import java.net.Socket;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Queue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.net.SocketException;
 
 /**
@@ -41,6 +39,14 @@ public class ClientHandler extends Thread {
     }
 
     /**
+     * Get a unique ID for this client
+     * @return
+     */
+    public int getClientId() {
+        return (int) Thread.currentThread().getId();
+    }
+
+    /**
      * Handle client connection. This method is entry point when a new thread
      * is started
      */
@@ -59,14 +65,21 @@ public class ClientHandler extends Thread {
                 // Socket closed on the client side, force closing the server side as well
                 clientSocket.close();
             } catch (SocketException ex) {
-                Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("Socket exception for client " + getClientId() + ": " + ex.getMessage());
             }
         } catch (IOException ex) {
-            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("I/O Exception for client " + getClientId() + ": " + ex.getMessage());
         }
 
         // Socket has been closed. Remove user from connectedClients.
-        server.removeConnectedClient((int) Thread.currentThread().getId());
+        try {
+            System.out.println("Trying to close socket for client " + getClientId() + "...");
+            clientSocket.close();
+            System.out.println("Socket closed for client " + getClientId());
+        } catch (IOException e) {
+            System.out.println("Could not close socket for client " + getClientId());
+        }
+        server.removeConnectedClient(getClientId());
     }
 
     /**

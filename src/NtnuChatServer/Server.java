@@ -12,6 +12,10 @@ import java.util.logging.Logger;
  * Used as part of assignment A4 in DataKomm course.
  */
 public class Server {
+    private static final int SECONDS_IN_ONE_HOUR = 60 * 60;
+    // The socket will be close when inactive for this many milliseconds
+    private static final int SOCKET_TIMEOUT_MS = SECONDS_IN_ONE_HOUR * 1000;
+
     private ServerSocket serverSocket;
     private final Map<Integer, ClientHandler> connectedClients;
 
@@ -38,6 +42,7 @@ public class Server {
             try {
                 // Wait for an incoming connection.
                 Socket incomingSocket = serverSocket.accept();
+                incomingSocket.setSoTimeout(SOCKET_TIMEOUT_MS);
 
 
                 // Handle new connection
