@@ -125,4 +125,14 @@ public class Server {
         }
         return usernameAvailable;
     }
+
+    /**
+     * Return all usernames currently in use (all logged-in users), separated by spaces
+     * @return All active usernames, separated by spaces
+     */
+    public String getActiveUsernames() {
+        List<String> usernames = new LinkedList<>();
+        clientHandlers.forEach((c) -> usernames.add(c.getUsername()));
+        return String.join(" ", usernames);
+    }
 }
