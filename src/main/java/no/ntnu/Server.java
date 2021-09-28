@@ -121,22 +121,53 @@ public class Server {
      * @return True if username available, false if someone already uses it
      */
     public boolean isUsernameAvailable(String username) {
-        boolean usernameAvailable = true;
+        ClientHandler clientHandler = getHandlerByUsername(username);
+        return clientHandler == null;
+    }
+
+    /**
+     * Find a client handler with the given username
+     *
+     * @param username The username of desired client handler
+     * @return The desired client handler or null if none found with that username
+     */
+    private ClientHandler getHandlerByUsername(String username) {
+        ClientHandler clientHandler = null;
         Iterator<ClientHandler> it = clientHandlers.iterator();
-        while (usernameAvailable && it.hasNext()) {
-            ClientHandler clientHandler = it.next();
-            usernameAvailable = !clientHandler.hasUsername(username);
+        while (clientHandler == null && it.hasNext()) {
+            ClientHandler c = it.next();
+            if (c.hasUsername(username)) {
+                clientHandler = c;
+            }
         }
-        return usernameAvailable;
+        return clientHandler;
     }
 
     /**
      * Return all usernames currently in use (all logged-in users), separated by spaces
+     *
      * @return All active usernames, separated by spaces
      */
     public String getActiveUsernames() {
         List<String> usernames = new LinkedList<>();
         clientHandlers.forEach((c) -> usernames.add(c.getUsername()));
         return String.join(" ", usernames);
+    }
+
+    /**
+     * Forward a private message to a specific recipient
+     *
+     * @param recipient    The username of the recipient
+     * @param wholeMessage The whole message to forward, including the privmsg, recipient, etc
+     * @return true on success, false on error (user not found)
+     */
+    public boolean forwardPrivateMessage(String recipient, String wholeMessage) {
+        ClientHandler clientHandler = getHandlerByUsername(recipient);
+        if (clientHandler != null && clientHandler.isLoggedIn()) {
+            clientHandler.send(wholeMessage);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -13,6 +13,7 @@ import java.net.Socket;
  */
 public class ClientHandler extends Thread {
     private static final String CMD_PUBLIC_MESSAGE = "msg";
+    private static final String CMD_PRIVATE_MESSAGE = "privmsg";
     private static final String CMD_MSG_OK = "msgok";
     private static final String CMD_HELP = "help";
     private static final String CMD_LOGIN = "login";
@@ -22,6 +23,8 @@ public class ClientHandler extends Thread {
     private static final String ERR_NOT_SUPPORTED = "cmderr command not supported";
     private static final String ERR_USERNAME_TAKEN = "loginerr username already in use";
     private static final String ERR_INCORRECT_USERNAME = "loginerr incorrect username format";
+    private static final String ERR_INCORRECT_RECIPIENT = "msgerr incorrect recipient";
+    private static final String ERR_UNAUTHORIZED = "msgerr unauthorized";
 
     private final Socket socket;
     private final Server server;
@@ -29,6 +32,8 @@ public class ClientHandler extends Thread {
     private final BufferedReader inFromClient;
     private final PrintWriter outToClient;
     private String username;
+    // This flag will be set to true once the user logs in with a valid username
+    private boolean loggedIn = false;
     // Incremented by 1 for each user
     private static int userCounter = 1;
 
@@ -53,6 +58,7 @@ public class ClientHandler extends Thread {
      */
     private String generateUniqueUsername() {
         String username = "user" + (userCounter++);
+        // Make sure the generated username does not collide with any of the other users
         while (!server.isUsernameAvailable(username)) {
             username = "user" + (userCounter++);
         }
@@ -101,6 +107,9 @@ public class ClientHandler extends Thread {
                     case CMD_PUBLIC_MESSAGE:
                         handlePublicMessage(message.getArguments());
                         break;
+                    case CMD_PRIVATE_MESSAGE:
+                        forwardPrivateMessage(message);
+                        break;
                     case CMD_HELP:
                         send("supported msg help");
                         break;
@@ -132,6 +141,7 @@ public class ClientHandler extends Thread {
         if (isAlphaNumeric(username)) {
             if (server.isUsernameAvailable(username)) {
                 this.username = username;
+                loggedIn = true;
                 send(CMD_LOGIN_OK);
             } else {
                 send(ERR_USERNAME_TAKEN);
@@ -162,6 +172,46 @@ public class ClientHandler extends Thread {
         String forwardedMessage = CMD_PUBLIC_MESSAGE + " " + username + " " + message;
         int recipientCount = server.forwardToAllClientsExcept(forwardedMessage, this);
         send(CMD_MSG_OK + " " + recipientCount);
+    }
+
+    /**
+     * Forward a private message to necessary recipient
+     *
+     * @param m The received message
+     */
+    private void forwardPrivateMessage(Message m) {
+        if (!isLoggedIn()) {
+            send(ERR_UNAUTHORIZED);
+            return;
+        }
+
+        // Split the arguments into recipient and message
+        String arguments = m.getArguments();
+        if (arguments != null) {
+            String[] parts = arguments.split(" ", 2);
+            if (parts.length == 2) {
+                String recipient = parts[0];
+                String message = CMD_PRIVATE_MESSAGE + " " + recipient + " " + parts[1];
+                if (server.forwardPrivateMessage(recipient, message)) {
+                    send(CMD_MSG_OK + " 1");
+                } else {
+                    send(ERR_INCORRECT_RECIPIENT);
+                }
+            } else {
+                send(ERR_NOT_SUPPORTED);
+            }
+        } else {
+            send(ERR_NOT_SUPPORTED);
+        }
+    }
+
+    /**
+     * Return true if this client has logged in with a proper username
+     *
+     * @return True if logged in, false if not
+     */
+    public boolean isLoggedIn() {
+        return loggedIn;
     }
 
     /**
@@ -213,7 +263,8 @@ public class ClientHandler extends Thread {
 
     /**
      * Return the username of the current user
-     * @return
+     *
+     * @return The username for this client
      */
     public String getUsername() {
         return username;
