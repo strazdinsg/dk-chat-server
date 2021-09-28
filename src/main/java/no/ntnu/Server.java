@@ -101,13 +101,17 @@ public class Server {
      *
      * @param message The message to forward
      * @param sender  The original sender who will not receive this message
+     * @return The number of clients who received the message
      */
-    public void forwardToAllClientsExcept(String message, ClientHandler sender) {
+    public int forwardToAllClientsExcept(String message, ClientHandler sender) {
+        int recipientCount = 0;
         for (ClientHandler c : clientHandlers) {
             if (c != sender) {
                 c.send(message);
+                recipientCount++;
             }
         }
+        return recipientCount;
     }
 
     /**

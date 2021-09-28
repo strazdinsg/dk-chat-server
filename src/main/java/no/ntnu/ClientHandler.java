@@ -13,6 +13,7 @@ import java.net.Socket;
  */
 public class ClientHandler extends Thread {
     private static final String CMD_PUBLIC_MESSAGE = "msg";
+    private static final String CMD_MSG_OK = "msgok";
     private static final String CMD_HELP = "help";
     private static final String CMD_LOGIN = "login";
     private static final String CMD_LOGIN_OK = "loginok";
@@ -98,7 +99,7 @@ public class ClientHandler extends Thread {
                 Server.log(getId() + ": " + message);
                 switch (message.getCommand()) {
                     case CMD_PUBLIC_MESSAGE:
-                        forwardMessage(message.getArguments());
+                        handlePublicMessage(message.getArguments());
                         break;
                     case CMD_HELP:
                         send("supported msg help");
@@ -152,13 +153,15 @@ public class ClientHandler extends Thread {
     }
 
     /**
-     * Forward the message to all other clients, except this one who sent it
+     * Forward the message to all other clients, except this one who sent it.
+     * Send also a response to the sender, according to the protocol.
      *
      * @param message The message to forward
      */
-    private void forwardMessage(String message) {
+    private void handlePublicMessage(String message) {
         String forwardedMessage = CMD_PUBLIC_MESSAGE + " " + username + " " + message;
-        server.forwardToAllClientsExcept(forwardedMessage, this);
+        int recipientCount = server.forwardToAllClientsExcept(forwardedMessage, this);
+        send(CMD_MSG_OK + " " + recipientCount);
     }
 
     /**
