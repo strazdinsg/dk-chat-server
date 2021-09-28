@@ -3,6 +3,7 @@ package no.ntnu;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
@@ -13,6 +14,7 @@ public class ClientHandler extends Thread {
     private final Server server;
     private boolean needToRun = true;
     private final BufferedReader inFromClient;
+    private final PrintWriter outToClient;
 
     /**
      * ClientHandler constructor
@@ -24,6 +26,7 @@ public class ClientHandler extends Thread {
         this.socket = clientSocket;
         this.server = server;
         this.inFromClient = createInputStreamReader();
+        this.outToClient = createOutputStreamWriter();
     }
 
     /**
@@ -35,9 +38,23 @@ public class ClientHandler extends Thread {
         try {
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         } catch (IOException e) {
-            Server.log("Could not setup the input stream!");
+            Server.log("Could not setup the input stream: " + e.getMessage());
         }
         return reader;
+    }
+
+    /**
+     * Create writer which can be used to send data to the client (to the socket)
+     * @return The output-stream writer or null on error
+     */
+    private PrintWriter createOutputStreamWriter() {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(socket.getOutputStream(), true);
+        } catch (IOException e) {
+            Server.log("Could not setup the output stream: " + e.getMessage());
+        }
+        return writer;
     }
 
     /**
@@ -48,6 +65,7 @@ public class ClientHandler extends Thread {
             String message = readClientMessage();
             if (message != null) {
                 Server.log(getId() + ": " + message);
+                send(message); // Echo the same message back to the client
             }
         }
         Server.log("Done processing client");
@@ -67,6 +85,14 @@ public class ClientHandler extends Thread {
             Server.log("Error while reading the socket input: " + e.getMessage());
         }
         return message;
+    }
+
+    /**
+     * Send a message to the client. Newline appended automatically
+     * @param message
+     */
+    private void send(String message) {
+        outToClient.println(message);
     }
 
     /**
