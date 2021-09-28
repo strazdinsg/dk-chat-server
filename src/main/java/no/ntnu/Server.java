@@ -27,7 +27,7 @@ public class Server {
                 Socket clientSocket = acceptNextClient(welcomeSocket);
                 if (clientSocket != null) {
                     ClientHandler clientHandler = new ClientHandler(clientSocket);
-                    clientHandler.handle();
+                    clientHandler.start();
                 }
             }
         }

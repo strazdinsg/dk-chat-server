@@ -6,7 +6,7 @@ import java.net.Socket;
 /**
  * Handles the logic of one particular client connection
  */
-public class ClientHandler {
+public class ClientHandler extends Thread {
     private final Socket socket;
 
     /**
@@ -21,7 +21,7 @@ public class ClientHandler {
     /**
      * Handle the conversation according to the protocol
      */
-    public void handle() {
+    public void run() {
         Server.log("Emulating a long operation...");
         try {
             Thread.sleep(10 * 1000);
