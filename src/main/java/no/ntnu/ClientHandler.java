@@ -1,5 +1,7 @@
 package no.ntnu;
 
+import no.ntnu.message.Message;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,6 +12,7 @@ import java.net.Socket;
  * Handles the logic of one particular client connection
  */
 public class ClientHandler extends Thread {
+    private static final String CMD_PUBLIC_MESSAGE = "msg";
     private final Socket socket;
     private final Server server;
     private boolean needToRun = true;
@@ -35,6 +38,7 @@ public class ClientHandler extends Thread {
 
     /**
      * Generate a unique username
+     *
      * @return a unique username
      */
     private String generateUniqueUsername() {
@@ -43,6 +47,7 @@ public class ClientHandler extends Thread {
 
     /**
      * Create buffered input stream reader for the socket
+     *
      * @return The input stream reader or null on error
      */
     private BufferedReader createInputStreamReader() {
@@ -57,6 +62,7 @@ public class ClientHandler extends Thread {
 
     /**
      * Create writer which can be used to send data to the client (to the socket)
+     *
      * @return The output-stream writer or null on error
      */
     private PrintWriter createOutputStreamWriter() {
@@ -74,12 +80,14 @@ public class ClientHandler extends Thread {
      */
     public void run() {
         while (needToRun) {
-            String message = readClientMessage();
+            Message message = readClientMessage();
             if (message != null) {
                 Server.log(getId() + ": " + message);
-                // Forward the message (with username) to all other clients, except this one
-                String forwardedMessage = "msg " + username + " " + message;
-                server.forwardToAllClientsExcept(forwardedMessage, this);
+                if (CMD_PUBLIC_MESSAGE.equals(message.getCommand())) {
+                    // Forward the message (with username) to all other clients, except this one
+                    String forwardedMessage = CMD_PUBLIC_MESSAGE + " " + username + " " + message.getArguments();
+                    server.forwardToAllClientsExcept(forwardedMessage, this);
+                }
             }
         }
         Server.log("Done processing client");
@@ -89,20 +97,22 @@ public class ClientHandler extends Thread {
 
     /**
      * Read one message from the client (from the socket)
+     *
      * @return The message or null on error
      */
-    private String readClientMessage() {
-        String message = null;
+    private Message readClientMessage() {
+        String receivedInputLine = null;
         try {
-            message = inFromClient.readLine();
+            receivedInputLine = inFromClient.readLine();
         } catch (IOException e) {
             Server.log("Error while reading the socket input: " + e.getMessage());
         }
-        return message;
+        return Message.createFromInput(receivedInputLine);
     }
 
     /**
      * Send a message to the client. Newline appended automatically
+     *
      * @param message The message to send
      */
     public void send(String message) {
