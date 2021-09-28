@@ -13,6 +13,7 @@ import java.net.Socket;
  */
 public class ClientHandler extends Thread {
     private static final String CMD_PUBLIC_MESSAGE = "msg";
+    private static final String CMD_HELP = "help";
 
     private static final String ERR_NOT_SUPPORTED = "cmderr command not supported";
 
@@ -91,6 +92,9 @@ public class ClientHandler extends Thread {
                         // Forward the message (with username) to all other clients, except this one
                         String forwardedMessage = CMD_PUBLIC_MESSAGE + " " + username + " " + message.getArguments();
                         server.forwardToAllClientsExcept(forwardedMessage, this);
+                        break;
+                    case CMD_HELP:
+                        send("supported msg help");
                         break;
                     default:
                         send(ERR_NOT_SUPPORTED);
