@@ -17,6 +17,7 @@ public class ClientHandler extends Thread {
     private static final String CMD_LOGIN = "login";
     private static final String CMD_LOGIN_OK = "loginok";
     private static final String CMD_USERS = "users";
+    private static final String CMD_JOKE = "joke";
 
     private static final String ERR_NOT_SUPPORTED = "cmderr command not supported";
     private static final String ERR_USERNAME_TAKEN = "loginerr username already in use";
@@ -116,6 +117,9 @@ public class ClientHandler extends Thread {
                         break;
                     case CMD_USERS:
                         send("users " + server.getActiveUsernames());
+                        break;
+                    case CMD_JOKE:
+                        send(CMD_JOKE + " " + Jokes.getRandomJoke());
                         break;
                     default:
                         send(ERR_NOT_SUPPORTED);
