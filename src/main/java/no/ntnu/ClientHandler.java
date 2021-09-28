@@ -16,6 +16,7 @@ public class ClientHandler extends Thread {
     private static final String CMD_HELP = "help";
     private static final String CMD_LOGIN = "login";
     private static final String CMD_LOGIN_OK = "loginok";
+    private static final String CMD_USERS = "users";
 
     private static final String ERR_NOT_SUPPORTED = "cmderr command not supported";
     private static final String ERR_USERNAME_TAKEN = "loginerr username already in use";
@@ -104,6 +105,9 @@ public class ClientHandler extends Thread {
                         break;
                     case CMD_LOGIN:
                         handleLogin(message.getArguments());
+                        break;
+                    case CMD_USERS:
+                        send("users " + server.getActiveUsernames());
                         break;
                     default:
                         send(ERR_NOT_SUPPORTED);
@@ -202,5 +206,13 @@ public class ClientHandler extends Thread {
      */
     public boolean hasUsername(String username) {
         return this.username.equals(username);
+    }
+
+    /**
+     * Return the username of the current user
+     * @return
+     */
+    public String getUsername() {
+        return username;
     }
 }
