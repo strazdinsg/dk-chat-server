@@ -19,6 +19,10 @@ public class Server {
 
     private final List<ClientHandler> clientHandlers = new LinkedList<>();
 
+    /**
+     * Entrypoint for the application
+     * @param args Command-line arguments
+     */
     public static void main(String[] args) {
         Server server = new Server();
         server.run();

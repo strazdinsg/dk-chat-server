@@ -110,13 +110,13 @@ public class ClientHandler extends Thread {
                         forwardPrivateMessage(message);
                         break;
                     case CMD_HELP:
-                        send("supported msg help");
+                        send("supported msg privmsg login users joke help");
                         break;
                     case CMD_LOGIN:
                         handleLogin(message.getArguments());
                         break;
                     case CMD_USERS:
-                        send("users " + server.getActiveUsernames());
+                        send(CMD_USERS + " " + server.getActiveUsernames());
                         break;
                     case CMD_JOKE:
                         send(CMD_JOKE + " " + Jokes.getRandomJoke());
