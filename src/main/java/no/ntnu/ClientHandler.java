@@ -77,7 +77,9 @@ public class ClientHandler extends Thread {
             String message = readClientMessage();
             if (message != null) {
                 Server.log(getId() + ": " + message);
-                send("msg " + username + " " + message); // Echo the same message back to the client, add username
+                // Forward the message (with username) to all other clients, except this one
+                String forwardedMessage = "msg " + username + " " + message;
+                server.forwardToAllClientsExcept(forwardedMessage, this);
             }
         }
         Server.log("Done processing client");
@@ -103,7 +105,7 @@ public class ClientHandler extends Thread {
      * Send a message to the client. Newline appended automatically
      * @param message The message to send
      */
-    private void send(String message) {
+    public void send(String message) {
         outToClient.println(message);
     }
 

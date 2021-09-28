@@ -94,4 +94,17 @@ public class Server {
     public static void log(String message) {
         System.out.println(message);
     }
+
+    /**
+     * Forward a message to all client sockets, except the socket belonging to the original sender
+     * @param message The message to forward
+     * @param sender The original sender who will not receive this message
+     */
+    public void forwardToAllClientsExcept(String message, ClientHandler sender) {
+        for (ClientHandler c : clientHandlers.values()) {
+            if (c != sender) {
+                c.send(message);
+            }
+        }
+    }
 }
