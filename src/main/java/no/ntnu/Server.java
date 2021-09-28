@@ -26,7 +26,8 @@ public class Server {
             while (true) {
                 Socket clientSocket = acceptNextClient(welcomeSocket);
                 if (clientSocket != null) {
-                    handleClient(clientSocket);
+                    ClientHandler clientHandler = new ClientHandler(clientSocket);
+                    clientHandler.handle();
                 }
             }
         }
@@ -66,40 +67,9 @@ public class Server {
     }
 
     /**
-     * Handle one client connection - all the server logic
-     *
-     * @param clientSocket The socket for this client
-     */
-    private void handleClient(Socket clientSocket) {
-        log("Emulating a long operation...");
-        try {
-            Thread.sleep(10 * 1000);
-        } catch (InterruptedException e) {
-            log("Processing interrupted");
-        }
-        log("Done processing client");
-        closeClientSocket(clientSocket);
-    }
-
-    /**
-     * Close connection for the particular client
-     *
-     * @param clientSocket The socket to close
-     */
-    private void closeClientSocket(Socket clientSocket) {
-        log("Closing client socket...");
-        try {
-            clientSocket.close();
-        } catch (IOException e) {
-            log("Error while closing a client socket: " + e.getMessage());
-        }
-        log("Client socket closed");
-    }
-
-    /**
      * Log a message to standard output
      */
-    private static void log(String message) {
+    public static void log(String message) {
         System.out.println(message);
     }
 }
