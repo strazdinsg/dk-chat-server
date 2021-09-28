@@ -33,6 +33,7 @@ public class ClientHandler extends Thread {
         }
         Server.log("Done processing client");
         closeSocket();
+        server.removeClientHandler(this);
     }
 
     /**
@@ -46,6 +47,5 @@ public class ClientHandler extends Thread {
             Server.log("Error while closing a client socket: " + e.getMessage());
         }
         Server.log("Client socket closed");
-        server.removeClientHandler(this);
     }
 }
