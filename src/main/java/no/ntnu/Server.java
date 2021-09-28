@@ -3,6 +3,8 @@ package no.ntnu;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Main class for the TCP chat server. Accepts new client connections, hands each new client over to a
@@ -10,6 +12,7 @@ import java.net.Socket;
  */
 public class Server {
     private final static int TCP_PORT = 1300; // TCP port to listen to
+    private Map<Long, ClientHandler> clientHandlers = new HashMap<>();
 
     public static void main(String[] args) {
         Server server = new Server();
@@ -26,11 +29,30 @@ public class Server {
             while (true) {
                 Socket clientSocket = acceptNextClient(welcomeSocket);
                 if (clientSocket != null) {
-                    ClientHandler clientHandler = new ClientHandler(clientSocket);
+                    ClientHandler clientHandler = new ClientHandler(clientSocket, this);
                     clientHandler.start();
+                    storeClientHandler(clientHandler);
                 }
             }
         }
+    }
+
+    /**
+     * Store client handler in the register
+     *
+     * @param clientHandler The client handler thread
+     */
+    private void storeClientHandler(ClientHandler clientHandler) {
+        clientHandlers.put(clientHandler.getId(), clientHandler);
+    }
+
+    /**
+     * Remove client handler from the register
+     *
+     * @param clientHandler The client handler thread
+     */
+    public void removeClientHandler(ClientHandler clientHandler) {
+        clientHandlers.remove(clientHandler.getId());
     }
 
     /**

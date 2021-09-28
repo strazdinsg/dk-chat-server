@@ -8,14 +8,17 @@ import java.net.Socket;
  */
 public class ClientHandler extends Thread {
     private final Socket socket;
+    private final Server server;
 
     /**
      * Constructor
      *
      * @param clientSocket Socket for this particular client
+     * @param server The main server class which manages all the connections
      */
-    public ClientHandler(Socket clientSocket) {
+    public ClientHandler(Socket clientSocket, Server server) {
         this.socket = clientSocket;
+        this.server = server;
     }
 
     /**
@@ -43,5 +46,6 @@ public class ClientHandler extends Thread {
             Server.log("Error while closing a client socket: " + e.getMessage());
         }
         Server.log("Client socket closed");
+        server.removeClientHandler(this);
     }
 }
