@@ -101,7 +101,7 @@ public class Server {
      * @param sender The original sender who will not receive this message
      */
     public void forwardToAllClientsExcept(String message, ClientHandler sender) {
-        for (ClientHandler c : clientHandlers.values()) {
+        for (ClientHandler c : clientHandlers) {
             if (c != sender) {
                 c.send(message);
             }
