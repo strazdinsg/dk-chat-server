@@ -95,6 +95,9 @@ public class ClientHandler extends Thread {
                     default:
                         send(ERR_NOT_SUPPORTED);
                 }
+            } else {
+                Server.log("Error while reading client input, probably socket is closed, exiting...");
+                needToRun = false;
             }
         }
         Server.log("Done processing client");
