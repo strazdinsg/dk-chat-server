@@ -13,6 +13,10 @@ import java.util.List;
  */
 public class Server {
     private final static int TCP_PORT = 1300; // TCP port to listen to
+    private static final int SECONDS_IN_ONE_HOUR = 60 * 60;
+    // The socket will be close when inactive for this many milliseconds
+    private static final int SOCKET_TIMEOUT_MS = SECONDS_IN_ONE_HOUR * 1000;
+
     private final List<ClientHandler> clientHandlers = new LinkedList<>();
 
     public static void main(String[] args) {
@@ -82,6 +86,7 @@ public class Server {
         Socket clientSocket = null;
         try {
             clientSocket = welcomeSocket.accept();
+            clientSocket.setSoTimeout(SOCKET_TIMEOUT_MS);
             log("New client connected from " + clientSocket.getRemoteSocketAddress());
         } catch (IOException e) {
             log("Failed to accept a client connection: " + e.getMessage());
