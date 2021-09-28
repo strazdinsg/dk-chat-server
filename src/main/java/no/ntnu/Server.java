@@ -3,6 +3,7 @@ package no.ntnu;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  */
 public class Server {
     private final static int TCP_PORT = 1300; // TCP port to listen to
-    private List<ClientHandler> clientHandlers = new LinkedList<>();
+    private final List<ClientHandler> clientHandlers = new LinkedList<>();
 
     public static void main(String[] args) {
         Server server = new Server();
@@ -97,8 +98,9 @@ public class Server {
 
     /**
      * Forward a message to all client sockets, except the socket belonging to the original sender
+     *
      * @param message The message to forward
-     * @param sender The original sender who will not receive this message
+     * @param sender  The original sender who will not receive this message
      */
     public void forwardToAllClientsExcept(String message, ClientHandler sender) {
         for (ClientHandler c : clientHandlers) {
@@ -106,5 +108,21 @@ public class Server {
                 c.send(message);
             }
         }
+    }
+
+    /**
+     * Check if a given username is already available or a logged-in users has already taken it
+     *
+     * @param username The username to check
+     * @return True if username available, false if someone already uses it
+     */
+    public boolean isUsernameAvailable(String username) {
+        boolean usernameAvailable = true;
+        Iterator<ClientHandler> it = clientHandlers.iterator();
+        while (usernameAvailable && it.hasNext()) {
+            ClientHandler clientHandler = it.next();
+            usernameAvailable = !clientHandler.hasUsername(username);
+        }
+        return usernameAvailable;
     }
 }
