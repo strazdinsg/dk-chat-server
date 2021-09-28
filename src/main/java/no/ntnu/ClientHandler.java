@@ -15,6 +15,9 @@ public class ClientHandler extends Thread {
     private boolean needToRun = true;
     private final BufferedReader inFromClient;
     private final PrintWriter outToClient;
+    private final String username;
+    // Incremented by 1 for each user
+    private static int userCounter = 1;
 
     /**
      * ClientHandler constructor
@@ -27,6 +30,15 @@ public class ClientHandler extends Thread {
         this.server = server;
         this.inFromClient = createInputStreamReader();
         this.outToClient = createOutputStreamWriter();
+        this.username = generateUniqueUsername();
+    }
+
+    /**
+     * Generate a unique username
+     * @return a unique username
+     */
+    private String generateUniqueUsername() {
+        return "user" + (userCounter++);
     }
 
     /**
@@ -65,7 +77,7 @@ public class ClientHandler extends Thread {
             String message = readClientMessage();
             if (message != null) {
                 Server.log(getId() + ": " + message);
-                send(message); // Echo the same message back to the client
+                send("msg " + username + " " + message); // Echo the same message back to the client, add username
             }
         }
         Server.log("Done processing client");
@@ -89,7 +101,7 @@ public class ClientHandler extends Thread {
 
     /**
      * Send a message to the client. Newline appended automatically
-     * @param message
+     * @param message The message to send
      */
     private void send(String message) {
         outToClient.println(message);
