@@ -13,6 +13,9 @@ import java.net.Socket;
  */
 public class ClientHandler extends Thread {
     private static final String CMD_PUBLIC_MESSAGE = "msg";
+
+    private static final String ERR_NOT_SUPPORTED = "cmderr command not supported";
+
     private final Socket socket;
     private final Server server;
     private boolean needToRun = true;
@@ -83,10 +86,14 @@ public class ClientHandler extends Thread {
             Message message = readClientMessage();
             if (message != null) {
                 Server.log(getId() + ": " + message);
-                if (CMD_PUBLIC_MESSAGE.equals(message.getCommand())) {
-                    // Forward the message (with username) to all other clients, except this one
-                    String forwardedMessage = CMD_PUBLIC_MESSAGE + " " + username + " " + message.getArguments();
-                    server.forwardToAllClientsExcept(forwardedMessage, this);
+                switch (message.getCommand()) {
+                    case CMD_PUBLIC_MESSAGE:
+                        // Forward the message (with username) to all other clients, except this one
+                        String forwardedMessage = CMD_PUBLIC_MESSAGE + " " + username + " " + message.getArguments();
+                        server.forwardToAllClientsExcept(forwardedMessage, this);
+                        break;
+                    default:
+                        send(ERR_NOT_SUPPORTED);
                 }
             }
         }
