@@ -1,4 +1,4 @@
-package no.ntnu.message;
+package no.ntnu;
 
 /**
  * A message sent and received over the socket
